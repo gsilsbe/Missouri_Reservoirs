@@ -10,6 +10,8 @@ ui <- fluidPage(
        titlePanel("Process RRs TRIOS Data"),
        sidebarLayout(
          sidebarPanel(
+           textInput("Ed_device","Ed_device",""),
+           textInput("Lw_device","Lw_device",""),
            fileInput("Rrs.file","Upload TRIOS Data"),
            textInput("outdir", "Output Directory",
                      "C:/Users/loren/OneDrive/PostDoc/2022 - NASA post-doc/Ongoing papers/Hyperspectral data/TRIOS data/processed_files/"),
@@ -84,8 +86,8 @@ calc.RRs <- function(){
   
   if(is.null(input$Rrs.file)){return()}
   
-  Ed = read.TRIOS(input$Rrs.file$datapath, "SAM_850C")
-  Lw = read.TRIOS(input$Rrs.file$datapath, "SAM_8760")
+  Ed = read.TRIOS(input$Rrs.file$datapath, input$Ed_device)
+  Lw = read.TRIOS(input$Rrs.file$datapath, input$Lw_device)
 
   Ed.spectra = Ed$Spectra
   Lw.spectra = Lw$Spectra
@@ -121,7 +123,7 @@ calc.RRs <- function(){
 output$plot_Ed <- renderPlot({
   
   if(is.null(input$Rrs.file)){return()}
-  Ed = read.TRIOS(input$Rrs.file$datapath, "SAM_850C")$Spectra
+  Ed = read.TRIOS(input$Rrs.file$datapath, input$Ed_device)$Spectra
   wv = c(350:950)
   
   s1 = input$Rrs_data_rows_selected
@@ -157,7 +159,7 @@ output$plot_Lw <- renderPlot({
   
   if(is.null(input$Rrs.file)){return()}
   
-  Lw = read.TRIOS(input$Rrs.file$datapath, "SAM_8760")$Spectra
+  Lw = read.TRIOS(input$Rrs.file$datapath, input$Lw_device)$Spectra
   Lw = data.frame(Lw)
   wv = c(350:950)
   
@@ -259,8 +261,8 @@ observeEvent(input$SaveFile, {
   
   wv  = c(350:950)
   RRs = calc.RRs()
-  Ed = read.TRIOS(input$Rrs.file$datapath, "SAM_850C")$Spectra 
-  Lw = read.TRIOS(input$Rrs.file$datapath, "SAM_8760")$Spectra
+  Ed = read.TRIOS(input$Rrs.file$datapath, input$Ed_device)$Spectra 
+  Lw = read.TRIOS(input$Rrs.file$datapath, input$Lw_device)$Spectra
   
   s1 = input$Rrs_data_rows_selected
   s2 = input$Rrs_data_rows_all 
