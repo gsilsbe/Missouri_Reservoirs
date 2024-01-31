@@ -14,7 +14,7 @@ ui <- fluidPage(
            textInput("Lw_device","Lw_device",""),
            fileInput("Rrs.file","Upload TRIOS Data"),
            textInput("outdir", "Output Directory",
-                     "C:/Users/loren/OneDrive/PostDoc/2022 - NASA post-doc/Ongoing papers/Hyperspectral data/TRIOS data/processed_files/"),
+                     ""),
            textInput("Experiment","Experiment","Missouri_Reservoirs_RSWQ"),
            textInput("Cruise","Cruise","MO_RSWQ_2023"),
            textInput("Station","Station","NA"),
@@ -36,9 +36,9 @@ server <- function(input, output, session) {
 
 # read.TRIOS reads in raw TRIOS file and returns a list of
 # Spectra, TimeStamp, Pressure (if present), and Inclination (if present)
-  
-read.TRIOS <- function(TRIOS.file, Sensor){
 
+read.TRIOS <- function(TRIOS.file, Sensor){
+  
   con = file(TRIOS.file, "r")
   
   dat  = readLines(con)
@@ -47,14 +47,14 @@ read.TRIOS <- function(TRIOS.file, Sensor){
   spec = which(dat=="IDDataTypeSub1     = CALIBRATED", arr.ind=T)
   for (i in 1:length(spec)){ 
     foo = spec[i] - 1
+    bar = spec[i] - 2
     if (dat[foo] != "IDDataType         = SPECTRUM") {spec[i] = NA}
-    foo = spec[i] - 2
-    IDDevice  = gsub("IDDevice           = ", "", dat[foo])
+    IDDevice  = gsub("IDDevice           = ", "", dat[bar])
     if (IDDevice != Sensor) {spec[i] = NA}
   }
   
   spec = spec[is.finite(spec)]
-
+  
   # Declare variables
   n           = length(spec)
   wv          = c(350:950)
@@ -132,7 +132,7 @@ output$plot_Ed <- renderPlot({
   if (length(s1)>0){
   
     ind = s1[1]
-    maxEd = max(Ed[s1,])
+    maxEd = max(Ed[s1,],na.rm=TRUE)
     
     plot(wv, Ed[ind,1:601], type="l", axes=T,ylim=c(0,maxEd),
          xlab="Wavelength (nm)", ylab=expression(E[D]))
@@ -172,10 +172,10 @@ output$plot_Lw <- renderPlot({
     Lw_mean = 0
     Lw_sd = 0
   } else {  
-    Lw_mean = apply(Lw[selected_rows, 401:601], 2, mean) 
-    Lw_sd = apply(Lw[selected_rows, 401:601], 2, sd)
+    Lw_mean = apply(Lw[selected_rows, 401:451], 2, mean,na.rm=TRUE) 
+    Lw_sd = apply(Lw[selected_rows, 401:451], 2, sd,na.rm=TRUE)
   }  
-  maxLw = ceiling(max(Lw[selected_rows,]))
+  maxLw = ceiling(max(Lw[selected_rows,],na.rm=TRUE))
   
   # Empty plot to start  
   plot(wv, rep(NA, length(wv)), type="n", axes=F, ylim=c(0, maxLw),
@@ -216,12 +216,12 @@ output$plot_Rrs = renderPlot({
     Rrs_mean = 0
     Rrs_sd = 0
   } else {  
-    Rrs_mean = apply(Rrs[selected_rows, 401:601], 2, mean) 
-    Rrs_sd = apply(Rrs[selected_rows, 401:601], 2, sd)
+    Rrs_mean = apply(Rrs[selected_rows, 401:601], 2, mean, na.rm=TRUE) 
+    Rrs_sd = apply(Rrs[selected_rows, 401:601], 2, sd, na.rm=TRUE)
   }  
   
   # For nice axis in increments of 0.0025
-  maxRrs = ceiling(max(Rrs[selected_rows,])/0.0025)  * 0.0025
+  maxRrs = ceiling(max(Rrs[selected_rows,], na.rm=TRUE)/0.0025)  * 0.0025
   
   # Empty plot to start  
   plot(wv, rep(NA, length(wv)), type="n", axes=F, ylim=c(0, maxRrs),
@@ -259,6 +259,12 @@ observeEvent(input$SaveFile, {
   
   if(is.null(input$Rrs.file)){return()}
   
+  if(is.null(input$outdir)){
+    outdir = getwd('')
+  } else {
+    outdir = input$outdir
+  }
+  
   wv  = c(350:950)
   RRs = calc.RRs()
   Ed = read.TRIOS(input$Rrs.file$datapath, input$Ed_device)$Spectra 
@@ -285,7 +291,7 @@ observeEvent(input$SaveFile, {
 
     filename=paste0(input$Experiment,"_",input$Cruise,"_",input$Station,"_Rrs_above_water_",gsub("-","",substr(timestamp0,1,10)),"_",gsub(":","",substr(timestamp0,12,19)),'._R1.csv')
     
-    fileConn<-file(paste0(input$outdir,filename))
+    fileConn<-file(paste0(outdir,filename))
     writeLines(c("/begin_header",
                  "/investigators=Greg_Silsbe,Lorena_Silva,Rebecca_North",
                  "/affiliations=University_of_Maryland_Center_for_Environmental_Science_and_University_of_Missouri_Columbia",
