@@ -289,18 +289,18 @@ observeEvent(input$SaveFile, {
     timestamp0 = min(row.names(Rrs))
     timestamp1 = max(row.names(Rrs))
 
-    filename=paste0(input$Experiment,"_",input$Cruise,"_",input$Station,"_Rrs_above_water_",gsub("-","",substr(timestamp0,1,10)),"_",gsub(":","",substr(timestamp0,12,19)),'._R1.csv')
+    filename=paste0(input$Experiment,"_",input$Cruise,"_",input$Station,"_Rrs_above_water_",gsub("-","",substr(timestamp0,1,10)),"_",gsub(":","",substr(timestamp0,12,19)),'_R1.csv')
     
     fileConn<-file(paste0(outdir,filename))
     writeLines(c("/begin_header",
-                 "/investigators=Greg_Silsbe,Lorena_Silva,Rebecca_North",
+                 "/investigators=Greg_Silsbe,Lorena_Pinheiro-Silva,Rebecca_North",
                  "/affiliations=University_of_Maryland_Center_for_Environmental_Science_and_University_of_Missouri_Columbia",
                  "/contact=gsilsbe@umces.edu",
                  paste0("/experiment=",input$Experiment),
                  paste0("/cruise=",input$Cruise),
                  paste0("/station=",input$Station), 
                  paste0("/data_file_name=",filename),
-                 "/documents=/documents=Rrs_Seabass_methodology.pdf,Calibration_certificate_850C.pdf,Calibration_certificate_8760.pdf,Missouri_Reservoirs_RSWQ_2023_checklist.txt",
+                 "/documents=Rrs_Seabass_methodology.pdf,Calibration_certificate_850C.pdf,Calibration_certificate_8760.pdf,Missouri_Reservoirs_RSWQ_2023_checklist.txt",
                  "/data_type=above_water",
                  "/calibration_files=Back_SAM_850C.dat,Cal_SAM_850C.dat,SAM_850C.ini,Back_SAM_8760.dat,Cal_SAM_8760.dat,SAM_8760.ini",
                  "/calibration_date=20220214",
